@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ Dịch Game Ren'Py</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-button.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .file-drop-zone {
+            border: 2px dashed #4a5568;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .file-drop-zone.drag-over {
+            background-color: #2d3748;
+            border-color: #4f46e5;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-3xl bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white">Công cụ Hỗ trợ Dịch Game Ren'Py</h1>
+            <p class="text-gray-400 mt-2">Tải file lên, xử lý và nhận lại file đã được chuẩn bị để dịch hoặc tích hợp.</p>
+        </div>
+
+        <!-- Tabs Chuyển Đổi Chế Độ -->
+        <div class="flex justify-center border-b border-gray-700 mb-6">
+            <button id="tab1" class="tab-button active flex-1 py-3 px-4 text-sm font-medium text-center rounded-t-lg focus:outline-none transition-colors duration-200">
+                Chế độ 1: Trích xuất & Bảo vệ
+            </button>
+            <button id="tab2" class="tab-button flex-1 py-3 px-4 text-sm font-medium text-center rounded-t-lg focus:outline-none transition-colors duration-200">
+                Chế độ 2: Khôi phục Placeholder
+            </button>
+            <button id="tab3" class="tab-button flex-1 py-3 px-4 text-sm font-medium text-center rounded-t-lg focus:outline-none transition-colors duration-200">
+                Chế độ 3: Tích hợp bản dịch
+            </button>
+        </div>
+
+        <!-- Nội dung các chế độ -->
+        <div id="content1" class="space-y-6">
+            <h2 class="text-xl font-semibold text-center text-indigo-400">Trích xuất văn bản từ file .rpy gốc</h2>
+            <div class="space-y-2">
+                <label for="rpyFileInput1" class="block text-sm font-medium text-gray-300">1. Chọn file .rpy gốc của bạn:</label>
+                <input id="rpyFileInput1" type="file" accept=".rpy" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
+            </div>
+            <button id="processMode1" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                Xử lý & Tải về file
+            </button>
+        </div>
+
+        <div id="content2" class="hidden space-y-6">
+            <h2 class="text-xl font-semibold text-center text-green-400">Khôi phục placeholder sau khi dịch</h2>
+             <div class="space-y-4">
+                <div>
+                    <label for="translatedProtectedFile" class="block text-sm font-medium text-gray-300">1. Tải lên file .txt đã dịch (file_goc_protected.txt sau khi bạn đã điền bản dịch):</label>
+                    <input id="translatedProtectedFile" type="file" accept=".txt" class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer">
+                </div>
+                <div>
+                    <label for="mappingFile2" class="block text-sm font-medium text-gray-300">2. Tải lên file mapping.json:</label>
+                    <input id="mappingFile2" type="file" accept=".json" class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer">
+                </div>
+            </div>
+            <button id="processMode2" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                Khôi phục & Tải về
+            </button>
+        </div>
+
+        <div id="content3" class="hidden space-y-6">
+            <h2 class="text-xl font-semibold text-center text-sky-400">Tạo file .rpy cuối cùng với bản dịch</h2>
+            <div class="space-y-4">
+                 <div>
+                    <label for="finalTxtFile" class="block text-sm font-medium text-gray-300">1. Tải lên file dịch cuối cùng (file_dich_final.txt):</label>
+                    <input id="finalTxtFile" type="file" accept=".txt" class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-700 cursor-pointer">
+                </div>
+                <div>
+                    <label for="originalRpyFile3" class="block text-sm font-medium text-gray-300">2. Tải lên lại file .rpy gốc:</label>
+                    <input id="originalRpyFile3" type="file" accept=".rpy" class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-700 cursor-pointer">
+                </div>
+            </div>
+            <button id="processMode3" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50">
+                Tạo file RPY đã dịch
+            </button>
+        </div>
+
+        <!-- Khu vực hiển thị kết quả -->
+        <div id="output" class="mt-6 text-center"></div>
+
+    </div>
+
+    <script>
+        // --- BỘ ĐIỀU KHIỂN GIAO DIỆN ---
+        const tabs = [document.getElementById('tab1'), document.getElementById('tab2'), document.getElementById('tab3')];
+        const contents = [document.getElementById('content1'), document.getElementById('content2'), document.getElementById('content3')];
+        const outputDiv = document.getElementById('output');
+
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.add('hidden'));
+
+                tab.classList.add('active');
+                contents[index].classList.remove('hidden');
+                outputDiv.innerHTML = ''; // Xóa kết quả khi chuyển tab
+            });
+        });
+
+        // --- CÁC HÀM TIỆN ÍCH ---
+
+        /**
+         * Đọc nội dung file dưới dạng text.
+         * @param {File} file - Đối tượng file cần đọc.
+         * @returns {Promise<string>} - Promise chứa nội dung file.
+         */
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+
+        /**
+         * Tạo và kích hoạt việc tải file xuống.
+         * @param {string} filename - Tên file sẽ được tải về.
+         * @param {string} content - Nội dung của file.
+         * @param {string} mimeType - Loại MIME của file.
+         */
+        function downloadFile(filename, content, mimeType = 'text/plain;charset=utf-8') {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        /**
+         * Hiển thị thông báo và liên kết tải về trên giao diện.
+         * @param {string} message - Thông báo hiển thị.
+         * @param {Array<{filename: string, content: string, mimeType?: string}>} files - Mảng các file để tạo liên kết tải về.
+         */
+        function showOutput(message, files = []) {
+             outputDiv.innerHTML = `<p class="text-green-400 font-medium mb-4">${message}</p>`;
+            const fileLinksContainer = document.createElement('div');
+            fileLinksContainer.className = 'flex flex-col md:flex-row items-center justify-center gap-4';
+
+            files.forEach(fileInfo => {
+                const blob = new Blob([fileInfo.content], { type: fileInfo.mimeType || 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileInfo.filename;
+                a.className = 'w-full md:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-colors';
+                a.textContent = `Tải ${fileInfo.filename}`;
+                fileLinksContainer.appendChild(a);
+            });
+            outputDiv.appendChild(fileLinksContainer);
+        }
+
+        // --- LOGIC XỬ LÝ CHÍNH ---
+
+        // --- Chế độ 1: Trích xuất và Bảo vệ Placeholder ---
+        document.getElementById('processMode1').addEventListener('click', async () => {
+            const fileInput = document.getElementById('rpyFileInput1');
+            if (!fileInput.files.length) {
+                outputDiv.innerHTML = '<p class="text-red-400">Vui lòng chọn một file .rpy!</p>';
+                return;
+            }
+            outputDiv.innerHTML = '<p class="text-yellow-400">Đang xử lý...</p>';
+
+            try {
+                const content = await readFileAsText(fileInput.files[0]);
+                const lines = content.split(/\r?\n/);
+                const extractedLines = [];
+                const protectedLines = [];
+                const mapping = {};
+                let placeholderCounter = 1;
+                
+                // Regex để tìm chuỗi trong dấu ngoặc kép, bỏ qua 'old "..."'
+                const stringRegex = /(?<!old\s*)"(.*?)(?<!\\)"/g;
+                // Regex để tìm các placeholder phổ biến của Ren'Py
+                const placeholderRegex = /(\[.*?\]|\{.*?\}|\\{2}[nt%'])/g;
+
+                lines.forEach((line, index) => {
+                    // Chỉ xử lý những dòng có vẻ là thoại hoặc text
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine.startsWith('#') && trimmedLine.includes('"')) {
+                        let match;
+                        while ((match = stringRegex.exec(line)) !== null) {
+                            // Bỏ qua các chuỗi rỗng
+                            if(match[1].trim() === '') continue;
+
+                            let originalString = match[1];
+                            let protectedString = originalString;
+
+                            // Tìm và thay thế placeholder
+                            protectedString = protectedString.replace(placeholderRegex, (placeholder) => {
+                                const tempCode = `@@${placeholderCounter++}@@`;
+                                mapping[tempCode] = placeholder;
+                                return tempCode;
+                            });
+
+                            const lineNumber = index + 1;
+                            protectedLines.push(`${lineNumber}|||${protectedString}`);
+                        }
+                    }
+                });
+
+                const protectedTextContent = protectedLines.join('\n');
+                const mappingJsonContent = JSON.stringify(mapping, null, 2);
+
+                showOutput('Xử lý thành công! Tải về các file dưới đây:', [
+                    { filename: 'file_goc_protected.txt', content: protectedTextContent },
+                    { filename: 'mapping.json', content: mappingJsonContent, mimeType: 'application/json;charset=utf-8' }
+                ]);
+
+            } catch (error) {
+                console.error('Lỗi ở chế độ 1:', error);
+                outputDiv.innerHTML = `<p class="text-red-400">Đã xảy ra lỗi: ${error.message}</p>`;
+            }
+        });
+
+        // --- Chế độ 2: Khôi phục Placeholder ---
+        document.getElementById('processMode2').addEventListener('click', async () => {
+            const protectedFileInput = document.getElementById('translatedProtectedFile');
+            const mappingFileInput = document.getElementById('mappingFile2');
+
+            if (!protectedFileInput.files.length || !mappingFileInput.files.length) {
+                outputDiv.innerHTML = '<p class="text-red-400">Vui lòng chọn cả file text đã dịch và file mapping.json!</p>';
+                return;
+            }
+            outputDiv.innerHTML = '<p class="text-yellow-400">Đang khôi phục...</p>';
+
+            try {
+                const protectedContent = await readFileAsText(protectedFileInput.files[0]);
+                const mappingContent = await readFileAsText(mappingFileInput.files[0]);
+                const mapping = JSON.parse(mappingContent);
+                
+                const lines = protectedContent.split(/\r?\n/);
+                const finalLines = [];
+
+                lines.forEach(line => {
+                    if (!line.includes('|||')) return;
+                    
+                    let [lineNumber, translatedProtectedString] = line.split('|||');
+                    let restoredString = translatedProtectedString;
+
+                    // Thay thế các mã tạm trở lại thành placeholder gốc
+                    for (const tempCode in mapping) {
+                        // Dùng regex để đảm bảo thay thế chính xác
+                        const regex = new RegExp(tempCode.replace(/@/g, '@@'), 'g');
+                        restoredString = restoredString.replace(regex, mapping[tempCode]);
+                    }
+                    finalLines.push(`${lineNumber}|||${restoredString}`);
+                });
+
+                const finalContent = finalLines.join('\n');
+                showOutput('Khôi phục placeholder thành công!', [
+                    { filename: 'file_dich_final.txt', content: finalContent }
+                ]);
+
+            } catch (error) {
+                console.error('Lỗi ở chế độ 2:', error);
+                outputDiv.innerHTML = `<p class="text-red-400">Đã xảy ra lỗi: ${error.message}</p>`;
+            }
+        });
+
+        // --- Chế độ 3: Tích hợp bản dịch vào file RPY ---
+        document.getElementById('processMode3').addEventListener('click', async () => {
+            const finalTxtInput = document.getElementById('finalTxtFile');
+            const originalRpyInput = document.getElementById('originalRpyFile3');
+
+            if (!finalTxtInput.files.length || !originalRpyInput.files.length) {
+                outputDiv.innerHTML = '<p class="text-red-400">Vui lòng chọn cả file dịch cuối cùng và file .rpy gốc!</p>';
+                return;
+            }
+            outputDiv.innerHTML = '<p class="text-yellow-400">Đang tích hợp bản dịch...</p>';
+
+            try {
+                const finalTxtContent = await readFileAsText(finalTxtInput.files[0]);
+                const originalRpyContent = await readFileAsText(originalRpyInput.files[0]);
+
+                const translationMap = new Map();
+                finalTxtContent.split(/\r?\n/).forEach(line => {
+                    if (line.includes('|||')) {
+                        const [lineNumber, text] = line.split('|||');
+                        // Nếu có nhiều bản dịch trên cùng 1 dòng, ta nối chúng lại, trường hợp này hiếm
+                        if (translationMap.has(parseInt(lineNumber))) {
+                           translationMap.set(parseInt(lineNumber), translationMap.get(parseInt(lineNumber)) + text);
+                        } else {
+                           translationMap.set(parseInt(lineNumber), text);
+                        }
+                    }
+                });
+                
+                const rpyLines = originalRpyContent.split(/\r?\n/);
+                const stringRegex = /(?<!old\s*)"(.*?)(?<!\\)"/;
+
+                translationMap.forEach((translatedText, lineNumber) => {
+                    const lineIndex = lineNumber - 1;
+                    if (rpyLines[lineIndex]) {
+                         let replaced = false;
+                         // Chỉ thay thế chuỗi đầu tiên tìm thấy trên dòng đó
+                         rpyLines[lineIndex] = rpyLines[lineIndex].replace(stringRegex, (match, group1) => {
+                             if (!replaced && group1.trim() !== '') {
+                                replaced = true;
+                                // Escape các ký tự đặc biệt trong chuỗi dịch để không làm hỏng cú pháp Python/Ren'Py
+                                const escapedTranslatedText = translatedText.replace(/(["\\])/g, '\\$1');
+                                return `"${escapedTranslatedText}"`;
+                             }
+                             return match; // Trả về chuỗi gốc nếu không thay thế
+                         });
+                    }
+                });
+
+                const newRpyContent = rpyLines.join('\n');
+                const originalFilename = originalRpyInput.files[0].name.replace('.rpy', '');
+
+                showOutput('Tích hợp bản dịch thành công!', [
+                    { filename: `${originalFilename}_translated.rpy`, content: newRpyContent }
+                ]);
+
+            } catch (error) {
+                console.error('Lỗi ở chế độ 3:', error);
+                outputDiv.innerHTML = `<p class="text-red-400">Đã xảy ra lỗi: ${error.message}</p>`;
+            }
+        });
+
+    </script>
+</body>
+</html>
