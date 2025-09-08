@@ -264,7 +264,7 @@
                     // Thay thế các mã tạm trở lại thành placeholder gốc
                     for (const tempCode in mapping) {
                         // Dùng regex để đảm bảo thay thế chính xác
-                        const regex = new RegExp(tempCode.replace(/@/g, '@@'), 'g');
+                        const regex = new RegExp(tempCode.replace(/[\/\-\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
                         restoredString = restoredString.replace(regex, mapping[tempCode]);
                     }
                     finalLines.push(`${lineNumber}|||${restoredString}`);
@@ -345,5 +345,6 @@
     </script>
 </body>
 </html>
+
 
 
