@@ -196,7 +196,7 @@
                 // Regex để tìm chuỗi trong dấu ngoặc kép, bỏ qua 'old "..."'
                 const stringRegex = /(?<!old\s*)"(.*?)(?<!\\)"/g;
                 // Regex để tìm các placeholder phổ biến của Ren'Py
-                const placeholderRegex = /(\[.*?\]|\{.*?\}|\\{2}[nt%'])/g;
+                const placeholderRegex = /(\[.*?\]|\{.*?\}|\\{2}[nt%']|%\([^)]+\))/g;
 
                 lines.forEach((line, index) => {
                     // Chỉ xử lý những dòng có vẻ là thoại hoặc text
@@ -346,3 +346,4 @@
     </script>
 </body>
 </html>
+
